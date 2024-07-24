@@ -65,7 +65,7 @@ public class MovieController {
     }
     
     @CrossOrigin
-    @PutMapping("{/id}")
+    @PutMapping("{id}")
     public ResponseEntity<Movie> updateMovie(@PathVariable Long id, @RequestBody Movie updateMovie)
     {
         if(!movieRepository.existsById(id)){
@@ -73,6 +73,27 @@ public class MovieController {
         }        
         updateMovie.setId(id);
         Movie savedMovie = movieRepository.save(updateMovie);
+        
+        return ResponseEntity.ok(savedMovie);
+    }
+    
+    @CrossOrigin
+    @PostMapping("/vote/{id}/{rating}")
+    public ResponseEntity<Movie> voteMovie(@PathVariable Long id, @PathVariable Double rating)
+    {
+        if(!movieRepository.existsById(id)){
+            return ResponseEntity.notFound().build();
+        }
+        Optional<Movie> optional = movieRepository.findById(id);
+        Movie movie = optional.get();
+        
+        Double newRating = ((movie.getVotes() * movie.getRating()) + 
+                rating) / (movie.getVotes() + 1);
+        
+        movie.setVotes(movie.getVotes() + 1);
+        movie.setRating(newRating);
+        
+        Movie savedMovie = movieRepository.save(movie);
         
         return ResponseEntity.ok(savedMovie);
     }
